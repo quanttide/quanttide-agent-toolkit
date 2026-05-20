@@ -6,7 +6,7 @@ import json
 import httpx
 import pytest
 
-from quanttide_agent import ChatResponse, LLM, ToolCall, Usage
+from quanttide_agent import ChatResponse, LLM, ToolCall, ToolDef, Usage
 from quanttide_agent.llm import LLMError
 
 MOCK_CHAT_RESPONSE = {
@@ -137,14 +137,7 @@ class TestChatParameters:
     def test_tools(self):
         llm, reqs = _make_llm()
         tools = [
-            {
-                "type": "function",
-                "function": {
-                    "name": "get_weather",
-                    "description": "Get weather",
-                    "parameters": {"type": "object", "properties": {"location": {"type": "string"}}, "required": ["location"]},
-                },
-            }
+            ToolDef(name="get_weather", description="Get weather", parameters={"type": "object", "properties": {"location": {"type": "string"}}, "required": ["location"]}),
         ]
         llm.chat("Weather?", tools=tools)
         assert "tools" in _body(reqs[0])

@@ -6,14 +6,21 @@ import httpx
 from pydantic import BaseModel
 
 
-class ToolCall(BaseModel):
-    """A tool call returned by the LLM.
+class ToolDef(BaseModel):
+    """Definition of a tool that the LLM can call.
 
-    >>> tc = ToolCall(id="call_1", name="get_weather", arguments='{}')
-    >>> tc.name
+    >>> td = ToolDef(name="get_weather", description="Get weather", parameters={"type": "object", "properties": {"location": {"type": "string"}}})
+    >>> td.name
     'get_weather'
     """
 
+    name: str
+    description: str = ""
+    parameters: dict | None = None
+
+
+class ToolCall(BaseModel):
+    """A tool call invoked by the LLM."""
     id: str
     name: str
     arguments: str
@@ -93,7 +100,7 @@ class LLM:
         presence_penalty: float | None = None,
         thinking: bool | None = None,
         reasoning_effort: Literal["low", "medium", "high", "max"] | None = None,
-        tools: list[dict] | None = None,
+        tools: list[ToolDef] | None = None,
         tool_choice: str | None = None,
         response_format: dict | None = None,
         retry: int = 0,
@@ -120,7 +127,17 @@ class LLM:
         if reasoning_effort is not None:
             body["reasoning_effort"] = reasoning_effort
         if tools is not None:
-            body["tools"] = tools
+            body["tools"] = [
+                {
+                    "type": "function",
+                    "function": {
+                        "name": t.name,
+                        "description": t.description,
+                        "parameters": t.parameters or {"type": "object", "properties": {}},
+                    },
+                }
+                for t in tools
+            ]
         if tool_choice is not None:
             body["tool_choice"] = tool_choice
         if response_format is not None:
