@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
+from unittest.mock import patch
 
 import httpx
 import pytest
@@ -359,3 +360,84 @@ class TestEdgeCases:
         llm, reqs = _make_llm(mock)
         resp = llm.complete("Hi")
         assert resp.content == ""
+
+
+class TestMessageInput:
+    def test_message_list(self):
+        from quanttide_agent import Message
+
+        llm, reqs = _make_llm()
+        resp = llm.complete([Message(role="user", content="Hi")])
+        assert resp.content == "Hello! How can I help?"
+        assert b"Hi" in reqs[0].read()
+
+
+class TestChatDeprecated:
+    def test_chat_warns(self):
+        llm, reqs = _make_llm()
+        import warnings
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            resp = llm.chat("Hi")
+            assert len(w) == 1
+            assert issubclass(w[0].category, DeprecationWarning)
+            assert "complete()" in str(w[0].message)
+            assert resp.content == "Hello! How can I help?"
+
+
+class TestBaseUrlTrailingSlash:
+    def test_trailing_slash_stripped(self):
+        transport = httpx.MockTransport(lambda r: httpx.Response(200, json=MOCK_CHAT_RESPONSE))
+        client = httpx.Client(transport=transport, base_url="http://test")
+        llm = LLM(model="test", base_url="http://test/", api_key="k", _http_client=client)
+        assert str(llm._client.base_url) == "http://test"
+
+
+class TestActionParserEdgeCases:
+    def test_non_dict_json_fallback(self):
+        from quanttide_agent.agent import ActionParser
+
+        p = ActionParser()
+        result = p.parse('Action name: test\nAction args: []')
+        assert result is not None
+        assert result.name == "test"
+        assert result.args == {}
+
+    def test_invalid_json_fallback(self):
+        from quanttide_agent.agent import ActionParser
+
+        p = ActionParser()
+        result = p.parse('Action name: test\nAction args: not-json')
+        assert result is not None
+        assert result.name == "test"
+        assert result.args == {}
+
+
+class TestUsageFromApi:
+    def test_empty_dict(self):
+        from quanttide_agent.cost import Usage
+
+        u = Usage.from_api({"prompt_tokens": 0})
+        assert u is not None
+        assert u.input_tokens == 0
+
+    def test_none_data(self):
+        from quanttide_agent.cost import Usage
+
+        assert Usage.from_api(None) is None
+        assert Usage.from_api({}) is None
+
+
+class TestConfigVaultFallback:
+    def test_import_fallback(self):
+        import importlib
+        import sys
+
+        with patch.dict(sys.modules, {"pydantic_vault": None}):
+            if "quanttide_agent.config" in sys.modules:
+                del sys.modules["quanttide_agent.config"]
+            mod = importlib.import_module("quanttide_agent.config")
+            importlib.reload(mod)
+            assert mod._HAS_VAULT is False
+            assert mod.VaultSettingsSource is None
