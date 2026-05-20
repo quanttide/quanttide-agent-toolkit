@@ -119,17 +119,9 @@
 
 ### 暴露的问题
 
-| 问题 | 出现次数 | 原因 |
+| 问题 | 出现次数 | 处理 |
 |------|---------|------|
-| `chat_once(system, user)` 重复实现 | 3/6 项目 | 库只提供 `chat(messages)`，常见模式需自己封装 |
-| `thinking` 参数不通用 | 跨 Provider | DeepSeek 用 `{"thinking":{}}`，Qwen 用 `{"enable_thinking": true}`—参数是 Provider 特化的 |
-| `usage` 访问啰嗦 | 每个项目 | `resp.usage.input_tokens if resp.usage else 0` 需每次解包 |
-| 缺乏 `extra_body` | Qwen 项目 | Provider 特有参数（如 `enable_thinking`）无法透传 |
-| 默认 base_url 不匹配 | 3/6 项目 | 硬编码 `https://api.deepseek.com`，多数用户用 OpenAI 兼容端点 |
-
-### 待修复项
-
-- [ ] 添加 `chat_once(system, user)` 便捷方法
-- [ ] 添加 `extra_body` 透传参数
-- [ ] 添加 `model` 参数覆盖到 LLM 类构造（已支持方法级别）
-- [ ] 考虑修改默认 base_url 为更通用的值
+| `chat_once(system, user)` 重复实现 | 3/6 项目 | 无需修复，`chat([dict])` 更统一 |
+| `usage` 访问啰嗦 | 每个项目 | 无需修复，`resp.usage or Usage()` 即可 |
+| 默认 base_url 不匹配 | 3/6 项目 | 已全部切 DeepSeek，默认值正确 |
+| `thinking` / `extra_body` 不通用 | 跨 Provider | Qwen 已弃用，仅 DeepSeek 无需 extra_body |
