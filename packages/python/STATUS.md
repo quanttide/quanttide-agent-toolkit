@@ -104,7 +104,7 @@
 
 ## 实际重构评价
 
-2026-05-20，用量潮内部 6 个 Python 项目验证标准库的可替换性。
+2026-05-20，用量潮内部 9 个 Python 项目验证标准库的可替换性。
 
 ### 替换范围
 
@@ -115,7 +115,10 @@
 | `qtcloud-think/cli` | openai SDK | −41 行 | 完全替换 |
 | `qtcloud-think/provider` | openai SDK | −55 行 | 完全替换 |
 | `qtcloud-write/provider` | openai SDK | −140 行 | 完全替换 |
-| 合计 | — | −390 行 | 零运行时问题 |
+| `qtcloud-think/examples` | urllib + Ollama /api/generate | −68 行 | 完全替换 |
+| `qtcloud-asset/examples` | subprocess llm CLI | −26 行 | 完全替换 |
+| `qtcloud-finance/cli` | requests + Ollama /api/generate | −45 行 | 完全替换 |
+| 合计 | — | −529 行 | 零运行时问题 |
 
 ### 暴露的问题
 
