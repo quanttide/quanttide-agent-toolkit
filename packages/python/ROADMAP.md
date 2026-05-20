@@ -8,14 +8,16 @@
 - 向后兼容：`chat()` 继续接受 `list[dict]` 和 `str`
 - 计划版本：v0.1.1
 
-### Action 模型 + ActionParser
+### Action 模型 + ActionParser + ReActAgent
 
-Agent ReAct 协议的解码产物。
+Agent ReAct 协议的完整组件，已在 knowl 项目中实验验证。
 
-- `Action(name, args)` — 纯数据
-- `ActionParser(key_action_name, key_action_args, pattern).parse(text)` — 可配置的解析器
+- `Action(name, args)` — 纯数据模型
+- `ActionParser(key_name, key_args, pattern).parse(text)` — 可配置解析器
+- `ReActAgent(llm, tools, parser).run(messages)` — ReAct 循环
+- `ReActAgent.system_prompt(tool_desc, parser)` — 可选的协议格式说明
 
-- 计划版本：v0.1.x（与 Message 同期或滞后）
+计划版本：v0.1.x（与 Message 同期）
 
 ## v0.2.0 目标
 
@@ -24,16 +26,16 @@ Agent ReAct 协议的解码产物。
 `ToolDef` 拆为两个概念：
 
 - `ToolSchema` — 纯数据模型（`name` + `description` + `parameters`），可序列化，`LLM.chat(tools=...)` 使用
-- `Tool` — `ToolSchema` + `execute: Callable`，Agent 层使用，`tool.execute()` 直接执行
+- `Tool` — `ToolSchema` + `executor: Callable`，Agent 层使用，`tool.execute(args)` 带错误处理
 
 ```python
 # LLM 层 — 只需要 schema
 resp = llm.chat(messages, tools=[ToolSchema(name="validate", ...)])
 
-# Agent 层 — schema + execute 合一
-tools = [Tool(name="validate", execute=fn)]
-agent = Agent(llm, tools)
-resp = llm.chat(messages, tools=[t.schema for t in tools])  # 取 schema 发 API
+# Agent 层 — schema + executor 合一
+tools = [Tool(name="validate", executor=fn)]
+agent = ReActAgent(llm, tools)
+resp = llm.chat(messages, tools=[t.model_dump(exclude={"executor"}) for t in tools])
 ```
 
 ## 待考察方向
