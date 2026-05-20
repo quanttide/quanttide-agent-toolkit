@@ -8,9 +8,12 @@
 - 向后兼容：`chat()` 继续接受 `list[dict]` 和 `str`
 - 计划版本：v0.1.1
 
-### Action 模型
+### Action 模型 + ActionParser
 
-Agent ReAct 协议的解码产物。`Action(name, input)` + `Action.from_text()`。
+Agent ReAct 协议的解码产物。
+
+- `Action(name, args)` — 纯数据
+- `ActionParser(key_action_name, key_action_args, pattern).parse(text)` — 可配置的解析器
 
 - 计划版本：v0.1.x（与 Message 同期或滞后）
 
