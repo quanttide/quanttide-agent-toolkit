@@ -1,11 +1,11 @@
-# `quanttide-aigc-python`
+# `quanttide-agent`
 
-量潮AIGC标准Python工具箱
+量潮智能体标准Python工具箱
 
 ## 安装
 
 ```shell
-pip install git+https://github.com/quanttide/quanttide-aigc-python.git
+pip install git+https://github.com/quanttide/quanttide-agent-toolkit.git
 ```
 
 ## 贡献者

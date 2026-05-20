@@ -1,11 +1,11 @@
 [tool.poetry]
-name = "quanttide-aigc-python"
+name = "quanttide-agent"
 version = "0.1.0-alpha.1"
-description = "量潮AIGC标准Python工具箱"
+description = "量潮智能体标准Python工具箱"
 authors = ["QuantTide Inc. <opensource@quanttide.com>"]
 license = "Apache 2.0"
 readme = "README.md"
-packages = [{include = "quanttide_aigc"}]
+packages = [{include = "quanttide_agent", from = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
