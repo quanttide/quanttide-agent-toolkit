@@ -1,7 +1,7 @@
 from .agent import Action, ActionParser, ReActAgent
 from .cost import Usage
-from .llm import ChatResponse, LLM
-from .message import Message
+from .llm import LLM, LLMError
+from .message import ChatResponse, Message
 from .tool import Tool, ToolCall, ToolDef, ToolSchema
 
 __all__ = [

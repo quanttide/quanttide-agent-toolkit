@@ -6,24 +6,8 @@ import httpx
 from pydantic import BaseModel
 
 from .cost import Usage
-from .message import Message
+from .message import ChatResponse, Message
 from .tool import ToolCall, ToolSchema
-
-
-class ChatResponse(BaseModel):
-    """Response from an LLM chat call.
-
-    >>> resp = ChatResponse(content="Hello!", model="deepseek-v4-pro")
-    >>> resp.content
-    'Hello!'
-    """
-
-    content: str
-    model: str
-    finish_reason: str = "stop"
-    reasoning_content: str | None = None
-    tool_calls: list[ToolCall] | None = None
-    usage: Usage | None = None
 
 
 class LLMError(Exception):
