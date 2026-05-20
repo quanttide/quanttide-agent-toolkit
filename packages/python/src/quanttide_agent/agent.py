@@ -106,9 +106,7 @@ class ReActAgent:
 
             tool = self._tools.get(action.name)
             result = tool.execute(action.args) if tool else f"未知工具: {action.name}"
-            messages.append(
-                Message(role="tool", tool_call_id=action.name, content=result)
-            )
+            messages.append(Message(role="user", content=result))
 
         return "达到最大步数，未得到最终答案。"
 
