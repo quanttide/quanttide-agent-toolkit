@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "quanttide-agent"
-version = "0.1.0-alpha.1"
+version = "0.1.0"
 description = "量潮智能体标准Python工具箱"
 authors = ["QuantTide Inc. <opensource@quanttide.com>"]
 license = "Apache 2.0"
