@@ -12,14 +12,22 @@
 
 ## v0.2.0 目标
 
-### ToolDef → Tool + execute
+### ToolDef → ToolSchema + Tool
 
-`ToolDef` 改为 `Tool`，增加可选 `execute: Callable | None` 字段，供 Agent 层直接调用。
+`ToolDef` 拆为两个概念：
 
-- `ToolDef` → `Tool`
-- 新增 `execute: Callable | None = None`
-- `LLM.chat()` 序列化时自动忽略 `execute`（`model_dump(exclude_none=True)`）
-- Agent 直接 `tool.execute(args)`，不再需要外部 execute 映射
+- `ToolSchema` — 纯数据模型（`name` + `description` + `parameters`），可序列化，`LLM.chat(tools=...)` 使用
+- `Tool` — `ToolSchema` + `execute: Callable`，Agent 层使用，`tool.execute()` 直接执行
+
+```python
+# LLM 层 — 只需要 schema
+resp = llm.chat(messages, tools=[ToolSchema(name="validate", ...)])
+
+# Agent 层 — schema + execute 合一
+tools = [Tool(name="validate", execute=fn)]
+agent = Agent(llm, tools)
+resp = llm.chat(messages, tools=[t.schema for t in tools])  # 取 schema 发 API
+```
 
 ## 待考察方向
 
