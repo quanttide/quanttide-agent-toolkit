@@ -143,15 +143,7 @@ class LLM:
             ]
 
         usage_raw = data.get("usage")
-        usage = None
-        if usage_raw:
-            input_tokens = usage_raw.get("prompt_tokens", 0)
-            output_tokens = usage_raw.get("completion_tokens", 0)
-            usage = Usage(
-                input_tokens=input_tokens,
-                output_tokens=output_tokens,
-                total_tokens=usage_raw.get("total_tokens", 0),
-            )
+        usage = Usage.from_api(usage_raw) if usage_raw else None
 
         return ChatResponse(
             content=msg.get("content", "") or "",
