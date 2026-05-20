@@ -5,7 +5,8 @@ from unittest.mock import MagicMock
 import pytest
 from quanttide_agent import ChatResponse
 
-from quanttide_agent.agent import Action, ActionParser, Message, ReActAgent
+from quanttide_agent.agent import Action, ActionParser, ReActAgent
+from quanttide_agent.message import Message
 from quanttide_agent.tool import Tool
 
 

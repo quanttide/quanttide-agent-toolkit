@@ -5,6 +5,8 @@ from typing import Any, Literal
 import httpx
 from pydantic import BaseModel
 
+from .message import Message
+
 
 class ToolDef(BaseModel):
     """Definition of a tool that the LLM can call.
@@ -89,7 +91,7 @@ class LLM:
 
     def chat(
         self,
-        messages: list[dict] | str,
+        messages: list[Message] | list[dict] | str,
         *,
         model: str | None = None,
         temperature: float | None = None,
@@ -106,9 +108,13 @@ class LLM:
         retry: int = 0,
     ) -> ChatResponse:
         if isinstance(messages, str):
-            messages = [{"role": "user", "content": messages}]
+            body_messages: list[dict] = [{"role": "user", "content": messages}]
+        elif messages and isinstance(messages[0], Message):
+            body_messages = [m.to_dict() for m in messages]  # type: ignore
+        else:
+            body_messages = messages  # type: ignore
 
-        body: dict[str, Any] = {"model": model or self.model, "messages": messages}
+        body: dict[str, Any] = {"model": model or self.model, "messages": body_messages}
 
         if temperature is not None:
             body["temperature"] = temperature

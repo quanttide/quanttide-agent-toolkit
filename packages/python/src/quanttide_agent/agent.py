@@ -1,36 +1,15 @@
-"""Agent layer: Message, Action, ActionParser, ReActAgent."""
+"""Agent layer: Action, ActionParser, ReActAgent."""
 
 from __future__ import annotations
 
 import json
 import re
-from typing import Any, Literal
 
 from pydantic import BaseModel
 
 from .llm import LLM
+from .message import Message
 from .tool import Tool
-
-
-class Message(BaseModel):
-    """A message in a conversation.
-
-    >>> m = Message(role="user", content="hello")
-    >>> m.to_dict()
-    {'role': 'user', 'content': 'hello'}
-    """
-
-    role: Literal["system", "user", "assistant", "tool"]
-    content: str
-    tool_call_id: str | None = None
-
-    def to_dict(self) -> dict:
-        d: dict[str, Any] = {"role": self.role, "content": self.content}
-        if self.tool_call_id:
-            d["tool_call_id"] = self.tool_call_id
-        return d
-
-
 class Action(BaseModel):
     """An action instruction parsed from LLM output.
 
