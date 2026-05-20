@@ -14,15 +14,15 @@ class Usage(BaseModel):
     >>> u = Usage(input_tokens=10, output_tokens=5, total_tokens=15)
     >>> u.total_tokens
     15
-    >>> u.input_hit_tokens
+    >>> u.input_cached_tokens
     0
     """
 
     input_tokens: int = 0
     output_tokens: int = 0
     total_tokens: int = 0
-    input_hit_tokens: int = 0
-    input_miss_tokens: int = 0
+    input_cached_tokens: int = 0
+    input_uncached_tokens: int = 0
     reasoning_tokens: int = 0
 
     @classmethod
@@ -33,7 +33,7 @@ class Usage(BaseModel):
             input_tokens=data.get("prompt_tokens", 0),
             output_tokens=data.get("completion_tokens", 0),
             total_tokens=data.get("total_tokens", 0),
-            input_hit_tokens=data.get("prompt_cache_hit_tokens", 0),
-            input_miss_tokens=data.get("prompt_cache_miss_tokens", 0),
+            input_cached_tokens=data.get("prompt_cache_hit_tokens", 0),
+            input_uncached_tokens=data.get("prompt_cache_miss_tokens", 0),
             reasoning_tokens=data.get("completion_tokens_details", {}).get("reasoning_tokens", 0),
         )
