@@ -12,7 +12,14 @@
 
 ## v0.2.0 目标
 
-（待补充）
+### ToolDef → Tool + execute
+
+`ToolDef` 改为 `Tool`，增加可选 `execute: Callable | None` 字段，供 Agent 层直接调用。
+
+- `ToolDef` → `Tool`
+- 新增 `execute: Callable | None = None`
+- `LLM.chat()` 序列化时自动忽略 `execute`（`model_dump(exclude_none=True)`）
+- Agent 直接 `tool.execute(args)`，不再需要外部 executor 映射
 
 ## 待考察方向
 
