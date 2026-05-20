@@ -1,5 +1,15 @@
 # ROADMAP
 
+## v0.1.x 目标
+
+### Message 模型
+
+当前 `chat()` 接受 `list[dict]` 作为消息格式，缺少类型化的 Message 模型。
+
+- 添加 `Message` Pydantic 模型，`role` 用 `Literal` 约束
+- 向后兼容：`chat()` 继续接受 `list[dict]` 和 `str`
+- 计划版本：v0.1.1
+
 ## v0.2.0 目标
 
 ### ToolDef → Tool 重命名
