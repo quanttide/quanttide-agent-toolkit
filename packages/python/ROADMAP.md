@@ -1,8 +1,18 @@
 # ROADMAP
 
+## v0.2.0 目标
+
+### ToolDef → Tool 重命名
+
+`ToolDef` 的 `Def` 后缀冗余，`Tool` 与 `ToolCall` 成对更自然。
+
+- `ToolDef` → `Tool`
+- 不改变 `ToolCall` / `Usage` / `ChatResponse` 等现有模型
+- 破坏性变更，作为 v0.2.0 统一发布
+
 ## 待考察方向
 
-以下问题来自 v0.1.0 发布后的实际重构验证，暂不排期。
+以下问题暂不排期。
 
 ### Provider 特化参数
 
