@@ -222,6 +222,11 @@ class TestUsage:
         assert resp.usage.output_tokens == 5
         assert resp.usage.total_tokens == 15
 
+    def test_finish_reason(self):
+        llm, reqs = _make_llm()
+        resp = llm.chat("Hi")
+        assert resp.finish_reason == "stop"
+
     def test_no_usage(self):
         mock = copy.deepcopy(MOCK_CHAT_RESPONSE)
         del mock["usage"]
@@ -326,6 +331,7 @@ class TestDataclasses:
 
     def test_chat_response_defaults(self):
         resp = ChatResponse(content="hi", model="m")
+        assert resp.finish_reason == "stop"
         assert resp.reasoning_content is None
         assert resp.tool_calls is None
         assert resp.usage is None

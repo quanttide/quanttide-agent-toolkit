@@ -20,7 +20,7 @@ class ToolCall(BaseModel):
 
 
 class Usage(BaseModel):
-    """Token usage information.
+    """Token usage and cost information.
 
     >>> u = Usage(input_tokens=10, output_tokens=5, total_tokens=15)
     >>> u.total_tokens
@@ -42,6 +42,7 @@ class ChatResponse(BaseModel):
 
     content: str
     model: str
+    finish_reason: str = "stop"
     reasoning_content: str | None = None
     tool_calls: list[ToolCall] | None = None
     usage: Usage | None = None
@@ -152,15 +153,18 @@ class LLM:
         usage_raw = data.get("usage")
         usage = None
         if usage_raw:
+            input_tokens = usage_raw.get("prompt_tokens", 0)
+            output_tokens = usage_raw.get("completion_tokens", 0)
             usage = Usage(
-                input_tokens=usage_raw.get("prompt_tokens", 0),
-                output_tokens=usage_raw.get("completion_tokens", 0),
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
                 total_tokens=usage_raw.get("total_tokens", 0),
             )
 
         return ChatResponse(
             content=msg.get("content", "") or "",
             model=data.get("model", model or self.model),
+            finish_reason=choice.get("finish_reason", "stop"),
             reasoning_content=msg.get("reasoning_content"),
             tool_calls=tool_calls,
             usage=usage,
