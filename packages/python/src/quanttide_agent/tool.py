@@ -1,9 +1,4 @@
-"""Tool definition with optional executor for Agent use.
-
->>> t = Tool(name="validate", description="Check domain")
->>> t.name
-'validate'
-"""
+"""Tool models: ToolSchema, ToolCall, Tool."""
 
 from __future__ import annotations
 
@@ -12,12 +7,38 @@ from collections.abc import Callable
 from pydantic import BaseModel
 
 
-class Tool(BaseModel):
-    """Tool definition with schema fields and optional executor."""
+class ToolSchema(BaseModel):
+    """Definition of a tool that the LLM can call.
+
+    >>> ts = ToolSchema(name="get_weather", description="Get weather", parameters={"type": "object", "properties": {"location": {"type": "string"}}})
+    >>> ts.name
+    'get_weather'
+    """
 
     name: str
     description: str = ""
     parameters: dict | None = None
+
+
+ToolDef = ToolSchema
+
+
+class ToolCall(BaseModel):
+    """A tool call invoked by the LLM."""
+
+    id: str
+    name: str
+    arguments: str
+
+
+class Tool(ToolSchema):
+    """Tool schema with optional executor for Agent use.
+
+    >>> t = Tool(name="validate", description="Check domain")
+    >>> t.name
+    'validate'
+    """
+
     executor: Callable | None = None
 
     def execute(self, inp: dict) -> str:

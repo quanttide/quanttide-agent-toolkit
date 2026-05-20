@@ -6,29 +6,7 @@ import httpx
 from pydantic import BaseModel
 
 from .message import Message
-
-
-class ToolSchema(BaseModel):
-    """Definition of a tool that the LLM can call.
-
-    >>> td = ToolSchema(name="get_weather", description="Get weather", parameters={"type": "object", "properties": {"location": {"type": "string"}}})
-    >>> td.name
-    'get_weather'
-    """
-
-    name: str
-    description: str = ""
-    parameters: dict | None = None
-
-
-ToolDef = ToolSchema
-
-
-class ToolCall(BaseModel):
-    """A tool call invoked by the LLM."""
-    id: str
-    name: str
-    arguments: str
+from .tool import ToolCall, ToolSchema
 
 
 class Usage(BaseModel):

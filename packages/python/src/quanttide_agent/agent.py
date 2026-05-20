@@ -10,6 +10,8 @@ from pydantic import BaseModel
 from .llm import LLM
 from .message import Message
 from .tool import Tool
+
+
 class Action(BaseModel):
     """An action instruction parsed from LLM output.
 
@@ -31,10 +33,17 @@ class ActionParser:
     'validate'
     """
 
-    def __init__(self, key_action_name: str = "Action name", key_action_args: str = "Action args", pattern: str | None = None):
+    def __init__(
+        self,
+        key_action_name: str = "Action name",
+        key_action_args: str = "Action args",
+        pattern: str | None = None,
+    ):
         self.key_action_name = key_action_name
         self.key_action_args = key_action_args
-        self._pattern = pattern or rf"{key_action_name}:\s*(.+)\n{key_action_args}:\s*(.+)"
+        self._pattern = (
+            pattern or rf"{key_action_name}:\s*(.+)\n{key_action_args}:\s*(.+)"
+        )
 
     def parse(self, text: str) -> Action | None:
         m = re.search(self._pattern, text)
@@ -63,7 +72,14 @@ class ReActAgent:
         ])
     """
 
-    def __init__(self, llm: LLM, tools: list[Tool], *, parser: ActionParser | None = None, max_steps: int = 10):
+    def __init__(
+        self,
+        llm: LLM,
+        tools: list[Tool],
+        *,
+        parser: ActionParser | None = None,
+        max_steps: int = 10,
+    ):
         self.llm = llm
         self._tools = {t.name: t for t in tools}
         self._parser = parser or ActionParser()
@@ -81,17 +97,25 @@ class ReActAgent:
             action = self._parser.parse(output)
             messages.append(Message(role="assistant", content=output))
             if not action:
-                messages.append(Message(role="user", content="无法解析指令，请使用正确的 ReAct 格式。"))
+                messages.append(
+                    Message(
+                        role="user", content="无法解析指令，请使用正确的 ReAct 格式。"
+                    )
+                )
                 continue
 
             tool = self._tools.get(action.name)
             result = tool.execute(action.args) if tool else f"未知工具: {action.name}"
-            messages.append(Message(role="tool", tool_call_id=action.name, content=result))
+            messages.append(
+                Message(role="tool", tool_call_id=action.name, content=result)
+            )
 
         return "达到最大步数，未得到最终答案。"
 
     @staticmethod
-    def system_prompt(tool_descriptions: str, parser: ActionParser | None = None) -> str:
+    def system_prompt(
+        tool_descriptions: str, parser: ActionParser | None = None
+    ) -> str:
         p = parser or ActionParser()
         return f"""你可以使用以下工具：
 
