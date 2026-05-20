@@ -5,21 +5,9 @@ from typing import Any, Literal
 import httpx
 from pydantic import BaseModel
 
+from .cost import Usage
 from .message import Message
 from .tool import ToolCall, ToolSchema
-
-
-class Usage(BaseModel):
-    """Token usage and cost information.
-
-    >>> u = Usage(input_tokens=10, output_tokens=5, total_tokens=15)
-    >>> u.total_tokens
-    15
-    """
-
-    input_tokens: int = 0
-    output_tokens: int = 0
-    total_tokens: int = 0
 
 
 class ChatResponse(BaseModel):
