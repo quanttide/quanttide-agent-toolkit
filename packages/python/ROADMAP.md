@@ -10,22 +10,7 @@
 
 ## v0.2.0 目标
 
-### ToolDef → ToolSchema + Tool
-
-`ToolDef` 拆为两个概念：
-
-- `ToolSchema` — 纯数据模型（`name` + `description` + `parameters`），可序列化，`LLM.chat(tools=...)` 使用
-- `Tool` — `ToolSchema` + `executor: Callable`，Agent 层使用，`tool.execute(args)` 带错误处理
-
-```python
-# LLM 层 — 只需要 schema
-resp = llm.chat(messages, tools=[ToolSchema(name="validate", ...)])
-
-# Agent 层 — schema + executor 合一
-tools = [Tool(name="validate", executor=fn)]
-agent = ReActAgent(llm, tools)
-resp = llm.chat(messages, tools=[t.model_dump(exclude={"executor"}) for t in tools])
-```
+已完成：`ToolDef` 保留为 `ToolSchema` 的别名，不破坏旧代码。
 
 ## 待考察方向
 

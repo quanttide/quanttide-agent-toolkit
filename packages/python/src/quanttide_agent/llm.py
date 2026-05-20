@@ -8,10 +8,10 @@ from pydantic import BaseModel
 from .message import Message
 
 
-class ToolDef(BaseModel):
+class ToolSchema(BaseModel):
     """Definition of a tool that the LLM can call.
 
-    >>> td = ToolDef(name="get_weather", description="Get weather", parameters={"type": "object", "properties": {"location": {"type": "string"}}})
+    >>> td = ToolSchema(name="get_weather", description="Get weather", parameters={"type": "object", "properties": {"location": {"type": "string"}}})
     >>> td.name
     'get_weather'
     """
@@ -19,6 +19,9 @@ class ToolDef(BaseModel):
     name: str
     description: str = ""
     parameters: dict | None = None
+
+
+ToolDef = ToolSchema
 
 
 class ToolCall(BaseModel):
@@ -102,7 +105,7 @@ class LLM:
         presence_penalty: float | None = None,
         thinking: bool | None = None,
         reasoning_effort: Literal["low", "medium", "high", "max"] | None = None,
-        tools: list[ToolDef] | None = None,
+        tools: list[ToolSchema] | None = None,
         tool_choice: str | None = None,
         response_format: dict | None = None,
         retry: int = 0,

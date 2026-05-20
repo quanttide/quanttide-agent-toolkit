@@ -1,5 +1,5 @@
 from .agent import Action, ActionParser, ReActAgent
-from .llm import ChatResponse, LLM, ToolCall, ToolDef, Usage
+from .llm import ChatResponse, LLM, ToolCall, ToolDef, ToolSchema, Usage
 from .message import Message
 from .tool import Tool
 
@@ -13,5 +13,6 @@ __all__ = [
     "Tool",
     "ToolCall",
     "ToolDef",
+    "ToolSchema",
     "Usage",
 ]
