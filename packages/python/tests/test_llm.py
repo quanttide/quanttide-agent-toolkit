@@ -57,17 +57,17 @@ class TestLLMInit:
 class TestChatStringInput:
     def test_returns_chat_response(self):
         llm, reqs = _make_llm()
-        resp = llm.chat("Hello")
+        resp = llm.complete("Hello")
         assert isinstance(resp, ChatResponse)
 
     def test_content(self):
         llm, reqs = _make_llm()
-        resp = llm.chat("Hello")
+        resp = llm.complete("Hello")
         assert resp.content == "Hello! How can I help?"
 
     def test_sends_correct_body(self):
         llm, reqs = _make_llm()
-        llm.chat("Hello")
+        llm.complete("Hello")
         body = _body(reqs[0])
         assert body["model"] == "deepseek-v4-pro"
         assert body["messages"][0]["role"] == "user"
@@ -81,12 +81,12 @@ class TestChatListInput:
             {"role": "system", "content": "You are helpful"},
             {"role": "user", "content": "Hi"},
         ]
-        resp = llm.chat(messages)
+        resp = llm.complete(messages)
         assert resp.content == "Hello! How can I help?"
 
     def test_sends_messages_in_body(self):
         llm, reqs = _make_llm()
-        llm.chat([{"role": "user", "content": "test"}])
+        llm.complete([{"role": "user", "content": "test"}])
         body = _body(reqs[0])
         assert len(body["messages"]) == 1
         assert body["messages"][0]["role"] == "user"
@@ -96,42 +96,42 @@ class TestChatListInput:
 class TestChatParameters:
     def test_temperature(self):
         llm, reqs = _make_llm()
-        llm.chat("Hi", temperature=0.7)
+        llm.complete("Hi", temperature=0.7)
         assert _body(reqs[0])["temperature"] == 0.7
 
     def test_max_tokens(self):
         llm, reqs = _make_llm()
-        llm.chat("Hi", max_tokens=100)
+        llm.complete("Hi", max_tokens=100)
         assert _body(reqs[0])["max_tokens"] == 100
 
     def test_top_p(self):
         llm, reqs = _make_llm()
-        llm.chat("Hi", top_p=0.9)
+        llm.complete("Hi", top_p=0.9)
         assert _body(reqs[0])["top_p"] == 0.9
 
     def test_stop_string(self):
         llm, reqs = _make_llm()
-        llm.chat("Hi", stop="\n")
+        llm.complete("Hi", stop="\n")
         assert _body(reqs[0])["stop"] == "\n"
 
     def test_stop_list(self):
         llm, reqs = _make_llm()
-        llm.chat("Hi", stop=["\n", "END"])
+        llm.complete("Hi", stop=["\n", "END"])
         assert _body(reqs[0])["stop"] == ["\n", "END"]
 
     def test_frequency_penalty(self):
         llm, reqs = _make_llm()
-        llm.chat("Hi", frequency_penalty=0.5)
+        llm.complete("Hi", frequency_penalty=0.5)
         assert _body(reqs[0])["frequency_penalty"] == 0.5
 
     def test_presence_penalty(self):
         llm, reqs = _make_llm()
-        llm.chat("Hi", presence_penalty=0.5)
+        llm.complete("Hi", presence_penalty=0.5)
         assert _body(reqs[0])["presence_penalty"] == 0.5
 
     def test_model_override(self):
         llm, reqs = _make_llm()
-        llm.chat("Hi", model="deepseek-chat")
+        llm.complete("Hi", model="deepseek-chat")
         assert _body(reqs[0])["model"] == "deepseek-chat"
 
     def test_tools(self):
@@ -139,46 +139,46 @@ class TestChatParameters:
         tools = [
             ToolSchema(name="get_weather", description="Get weather", parameters={"type": "object", "properties": {"location": {"type": "string"}}, "required": ["location"]}),
         ]
-        llm.chat("Weather?", tools=tools)
+        llm.complete("Weather?", tools=tools)
         assert "tools" in _body(reqs[0])
 
     def test_tool_choice(self):
         llm, reqs = _make_llm()
-        llm.chat("Hi", tool_choice="auto")
+        llm.complete("Hi", tool_choice="auto")
         assert _body(reqs[0])["tool_choice"] == "auto"
 
     def test_response_format(self):
         llm, reqs = _make_llm()
-        llm.chat("Hi", response_format={"type": "json_object"})
+        llm.complete("Hi", response_format={"type": "json_object"})
         assert _body(reqs[0])["response_format"] == {"type": "json_object"}
 
 
 class TestThinkingMode:
     def test_thinking_enabled(self):
         llm, reqs = _make_llm()
-        llm.chat("Hi", thinking=True)
+        llm.complete("Hi", thinking=True)
         assert _body(reqs[0])["thinking"] == {"type": "enabled"}
 
     def test_thinking_disabled(self):
         llm, reqs = _make_llm()
-        llm.chat("Hi", thinking=False)
+        llm.complete("Hi", thinking=False)
         assert _body(reqs[0])["thinking"] == {"type": "disabled"}
 
     def test_reasoning_effort(self):
         llm, reqs = _make_llm()
-        llm.chat("Hi", reasoning_effort="high")
+        llm.complete("Hi", reasoning_effort="high")
         assert _body(reqs[0])["reasoning_effort"] == "high"
 
     def test_parses_reasoning_content(self):
         mock = copy.deepcopy(MOCK_CHAT_RESPONSE)
         mock["choices"][0]["message"]["reasoning_content"] = "I need to think..."
         llm, reqs = _make_llm(mock)
-        resp = llm.chat("Hi", thinking=True)
+        resp = llm.complete("Hi", thinking=True)
         assert resp.reasoning_content == "I need to think..."
 
     def test_no_reasoning_content_by_default(self):
         llm, reqs = _make_llm()
-        resp = llm.chat("Hi")
+        resp = llm.complete("Hi")
         assert resp.reasoning_content is None
 
 
@@ -194,7 +194,7 @@ class TestToolCalls:
         ]
         mock["choices"][0]["message"]["content"] = None
         llm, reqs = _make_llm(mock)
-        resp = llm.chat("Weather?")
+        resp = llm.complete("Weather?")
         assert resp.tool_calls is not None
         assert len(resp.tool_calls) == 1
         assert resp.tool_calls[0].name == "get_weather"
@@ -202,14 +202,14 @@ class TestToolCalls:
 
     def test_no_tool_calls_by_default(self):
         llm, reqs = _make_llm()
-        resp = llm.chat("Hi")
+        resp = llm.complete("Hi")
         assert resp.tool_calls is None
 
 
 class TestUsage:
     def test_parses_usage(self):
         llm, reqs = _make_llm()
-        resp = llm.chat("Hi")
+        resp = llm.complete("Hi")
         assert resp.usage is not None
         assert resp.usage.input_tokens == 10
         assert resp.usage.output_tokens == 5
@@ -217,21 +217,21 @@ class TestUsage:
 
     def test_finish_reason(self):
         llm, reqs = _make_llm()
-        resp = llm.chat("Hi")
+        resp = llm.complete("Hi")
         assert resp.finish_reason == "stop"
 
     def test_no_usage(self):
         mock = copy.deepcopy(MOCK_CHAT_RESPONSE)
         del mock["usage"]
         llm, reqs = _make_llm(mock)
-        resp = llm.chat("Hi")
+        resp = llm.complete("Hi")
         assert resp.usage is None
 
     def test_partial_usage(self):
         mock = copy.deepcopy(MOCK_CHAT_RESPONSE)
         mock["usage"] = {"prompt_tokens": 10}
         llm, reqs = _make_llm(mock)
-        resp = llm.chat("Hi")
+        resp = llm.complete("Hi")
         assert resp.usage is not None
         assert resp.usage.input_tokens == 10
         assert resp.usage.output_tokens == 0
@@ -243,21 +243,21 @@ class TestModel:
         mock = copy.deepcopy(MOCK_CHAT_RESPONSE)
         mock["model"] = "deepseek-chat"
         llm, reqs = _make_llm(mock)
-        resp = llm.chat("Hi")
+        resp = llm.complete("Hi")
         assert resp.model == "deepseek-chat"
 
     def test_model_fallback_to_constructor(self):
         mock = copy.deepcopy(MOCK_CHAT_RESPONSE)
         del mock["model"]
         llm, reqs = _make_llm(mock)
-        resp = llm.chat("Hi")
+        resp = llm.complete("Hi")
         assert resp.model == "deepseek-v4-pro"
 
 
 class TestRetry:
     def test_no_retry_on_success(self):
         llm, reqs = _make_llm()
-        llm.chat("Hi", retry=2)
+        llm.complete("Hi", retry=2)
         assert len(reqs) == 1
 
     def test_retry_then_success(self):
@@ -275,7 +275,7 @@ class TestRetry:
         transport = httpx.MockTransport(handler)
         client = httpx.Client(transport=transport, base_url="http://test")
         llm = LLM(model="deepseek-v4-pro", api_key="sk-test", _http_client=client)
-        resp = llm.chat("Hi", retry=3)
+        resp = llm.complete("Hi", retry=3)
         assert resp.content == "Hello! How can I help?"
         assert len(requests) == 3
 
@@ -287,7 +287,7 @@ class TestRetry:
         client = httpx.Client(transport=transport, base_url="http://test")
         llm = LLM(model="deepseek-v4-pro", api_key="sk-test", _http_client=client)
         with pytest.raises(LLMError, match="chat failed after retries"):
-            llm.chat("Hi", retry=2)
+            llm.complete("Hi", retry=2)
 
     def test_zero_retry_fails_once(self):
         requests: list[httpx.Request] = []
@@ -300,7 +300,7 @@ class TestRetry:
         client = httpx.Client(transport=transport, base_url="http://test")
         llm = LLM(model="deepseek-v4-pro", api_key="sk-test", _http_client=client)
         with pytest.raises(LLMError):
-            llm.chat("Hi", retry=0)
+            llm.complete("Hi", retry=0)
         assert len(requests) == 1
 
 
@@ -341,7 +341,7 @@ class TestAPIConnection:
         transport = httpx.MockTransport(handler)
         client = httpx.Client(transport=transport, base_url="http://test")
         llm = LLM(model="m", api_key="k", _http_client=client)
-        llm.chat("Hi")
+        llm.complete("Hi")
         assert requests[0].url.path == "/chat/completions"
 
 
@@ -350,12 +350,12 @@ class TestEdgeCases:
         mock = copy.deepcopy(MOCK_CHAT_RESPONSE)
         mock["choices"][0]["message"]["content"] = ""
         llm, reqs = _make_llm(mock)
-        resp = llm.chat("Hi")
+        resp = llm.complete("Hi")
         assert resp.content == ""
 
     def test_none_content_in_response(self):
         mock = copy.deepcopy(MOCK_CHAT_RESPONSE)
         mock["choices"][0]["message"]["content"] = None
         llm, reqs = _make_llm(mock)
-        resp = llm.chat("Hi")
+        resp = llm.complete("Hi")
         assert resp.content == ""

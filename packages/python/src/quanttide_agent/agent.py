@@ -88,7 +88,7 @@ class ReActAgent:
     def run(self, messages: list[Message]) -> str:
         messages = list(messages)
         for _ in range(self.max_steps):
-            resp = self.llm.chat([m.to_dict() for m in messages])
+            resp = self.llm.complete([m.to_dict() for m in messages])
             output = resp.content.strip()
 
             if "Final Answer:" in output:

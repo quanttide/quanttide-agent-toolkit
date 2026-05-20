@@ -86,14 +86,14 @@ class TestTool:
 class TestReActAgent:
     def test_direct_answer(self):
         llm = MagicMock()
-        llm.chat.return_value = ChatResponse(content="Final Answer: done", model="deepseek")
+        llm.complete.return_value = ChatResponse(content="Final Answer: done", model="deepseek")
         agent = ReActAgent(llm, [], max_steps=5)
         result = agent.run([Message(role="user", content="hi")])
         assert result == "done"
 
     def test_tool_call_loop(self):
         llm = MagicMock()
-        llm.chat.side_effect = [
+        llm.complete.side_effect = [
             ChatResponse(content="Action name: test\nAction args: {}", model="deepseek"),
             ChatResponse(content="Final Answer: ok", model="deepseek"),
         ]
@@ -106,7 +106,7 @@ class TestReActAgent:
 
     def test_max_steps(self):
         llm = MagicMock()
-        llm.chat.return_value = ChatResponse(content="Action name: test\nAction args: {}", model="deepseek")
+        llm.complete.return_value = ChatResponse(content="Action name: test\nAction args: {}", model="deepseek")
         t = Tool(name="test", executor=lambda args: "ok")
         agent = ReActAgent(llm, [t], max_steps=2)
         result = agent.run([Message(role="user", content="x")])
@@ -114,7 +114,7 @@ class TestReActAgent:
 
     def test_malformed_action(self):
         llm = MagicMock()
-        llm.chat.side_effect = [
+        llm.complete.side_effect = [
             ChatResponse(content="乱写", model="deepseek"),
             ChatResponse(content="Final Answer: fixed", model="deepseek"),
         ]

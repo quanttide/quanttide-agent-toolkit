@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from typing import Any, Literal
 
 import httpx
@@ -25,7 +26,7 @@ class LLM:
     Usage::
 
         llm = LLM(model="deepseek-v4-pro", api_key="sk-...")
-        resp = llm.chat("Hello")
+        resp = llm.complete("Hello")
         print(resp.content)
     """
     def __init__(
@@ -45,7 +46,7 @@ class LLM:
             timeout=120,
         )
 
-    def chat(
+    def complete(
         self,
         messages: list[Message] | list[dict] | str,
         *,
@@ -135,3 +136,8 @@ class LLM:
             tool_calls=tool_calls,
             usage=usage,
         )
+
+    def chat(self, *args, **kwargs) -> ChatResponse:
+        """Deprecated: use complete() instead. Will be removed in v0.3.0."""
+        warnings.warn("LLM.chat() is deprecated, use LLM.complete() instead", DeprecationWarning, stacklevel=2)
+        return self.complete(*args, **kwargs)
