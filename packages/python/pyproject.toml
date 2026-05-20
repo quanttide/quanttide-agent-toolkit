@@ -1,6 +1,6 @@
 [project]
 name = "quanttide-agent"
-version = "0.1.0"
+version = "0.1.1"
 description = "量潮智能体标准Python工具箱"
 authors = [{name = "QuantTide Inc.", email = "opensource@quanttide.com"}]
 license = {text = "Apache 2.0"}

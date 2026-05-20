@@ -2,22 +2,11 @@
 
 ## v0.1.x 目标
 
-### Message 模型
+以下已在 v0.1.1 中完成：
 
-- 添加 `Message` Pydantic 模型，`role` 用 `Literal` 约束
-- 向后兼容：`chat()` 继续接受 `list[dict]` 和 `str`
-- 计划版本：v0.1.1
-
-### Action 模型 + ActionParser + ReActAgent
-
-Agent ReAct 协议的完整组件，已在 knowl 项目中实验验证。
-
-- `Action(name, args)` — 纯数据模型
-- `ActionParser(key_name, key_args, pattern).parse(text)` — 可配置解析器
-- `ReActAgent(llm, tools, parser).run(messages)` — ReAct 循环
-- `ReActAgent.system_prompt(tool_desc, parser)` — 可选的协议格式说明
-
-计划版本：v0.1.x（与 Message 同期）
+- ✅ `Message` 模型
+- ✅ `Action` + `ActionParser` + `ReActAgent`
+- ✅ `Tool` 模型（schema + executor）
 
 ## v0.2.0 目标
 
