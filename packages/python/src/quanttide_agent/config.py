@@ -1,11 +1,25 @@
 """Configuration for quanttide-agent.
 
 Supports env vars, .env files, and Vault via pydantic-settings + pydantic-settings-vault.
+
+Usage::
+
+    from quanttide_agent.config import settings
+
+    # Via env vars:
+    #   LLM_API_KEY=sk-...
+    #   LLM_MODEL=deepseek-v4-flash
+    #   LLM_BASE_URL=https://api.deepseek.com
+
+    # Via .env file (project root):
+    #   LLM_API_KEY=sk-...
+
+    # Via Vault (requires pydantic-settings-vault):
+    #   Subclass Settings and add vault_secret_path/json_schema_extra to fields.
 """
 
 from __future__ import annotations
 
-from pydantic import Field
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource
 
 try:
@@ -20,27 +34,15 @@ except ImportError:
 class Settings(BaseSettings):
     """Global settings for quanttide-agent.
 
-    Field names follow `llm_*` convention for env var mapping::
+    Field names follow ``llm_*`` convention for env var mapping.
 
-        LLM_MODEL=deepseek-v4-flash
-        LLM_BASE_URL=https://api.deepseek.com
-        LLM_API_KEY=sk-...
-
-    Vault paths can be configured via ``json_schema_extra`` on each field.
+    Vault users should subclass and add ``json_schema_extra`` with
+    ``vault_secret_path`` / ``vault_secret_key`` to each field.
     """
 
     llm_model: str = "deepseek-v4-flash"
     llm_base_url: str = "https://api.deepseek.com"
-
-    llm_api_key: str = Field(
-        default="",
-        description="LLM API key",
-        json_schema_extra=(
-            {"vault_secret_path": "quanttide/deepseek", "vault_secret_key": "api_key"}
-            if _HAS_VAULT
-            else {}
-        ),
-    )
+    llm_api_key: str = ""
 
     model_config = {}
 
