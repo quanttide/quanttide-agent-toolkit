@@ -42,7 +42,7 @@
 | 消息模型 | 两者都不取 | 单 `Message` 模型 + `Literal` 约束 `role`，拒绝 Java 风格类分层 |
 | 多提供商 | 两者都不取 | 通过 `base_url + model` 配置，不做内部路由 |
 | 工具调用 | OpenAI 标准 | 遵循 OpenAI Function Calling |
-| 依赖 | 两者都不取 | 仅 `httpx`，零框架依赖 |
+| 依赖 | 两者都不取 | 仅 `httpx` + `pydantic`，零框架依赖 |
 
 ## 设计决策
 
@@ -101,3 +101,35 @@
 - LiteLLM 定位为 LLM **调用抽象层**（薄路由），适合做网关/代理
 - LangChain 定位为 Agent **应用框架**（厚生态），适合做完整应用
 - 本项目介于两者之间：取 LiteLLM 的统一接口风格，消息模型走自己的轻量路线，砍掉一切外部依赖
+
+## 实际重构评价
+
+2026-05-20，用量潮内部 6 个 Python 项目验证标准库的可替换性。
+
+### 替换范围
+
+| 项目 | 旧方式 | 替换代码量 | 结果 |
+|------|--------|-----------|------|
+| `code-agent` | 自写 LlmClient + ToolDef + dict | −92 行 | 完全替换 |
+| `qtcloud-connect/provider` | requests.post + 手动解析 | −62 行 | 完全替换 |
+| `qtcloud-think/cli` | openai SDK | −41 行 | 完全替换 |
+| `qtcloud-think/provider` | openai SDK | −55 行 | 完全替换 |
+| `qtcloud-write/provider` | openai SDK | −140 行 | 完全替换 |
+| 合计 | — | −390 行 | 零运行时问题 |
+
+### 暴露的问题
+
+| 问题 | 出现次数 | 原因 |
+|------|---------|------|
+| `chat_once(system, user)` 重复实现 | 3/6 项目 | 库只提供 `chat(messages)`，常见模式需自己封装 |
+| `thinking` 参数不通用 | 跨 Provider | DeepSeek 用 `{"thinking":{}}`，Qwen 用 `{"enable_thinking": true}`—参数是 Provider 特化的 |
+| `usage` 访问啰嗦 | 每个项目 | `resp.usage.input_tokens if resp.usage else 0` 需每次解包 |
+| 缺乏 `extra_body` | Qwen 项目 | Provider 特有参数（如 `enable_thinking`）无法透传 |
+| 默认 base_url 不匹配 | 3/6 项目 | 硬编码 `https://api.deepseek.com`，多数用户用 OpenAI 兼容端点 |
+
+### 待修复项
+
+- [ ] 添加 `chat_once(system, user)` 便捷方法
+- [ ] 添加 `extra_body` 透传参数
+- [ ] 添加 `model` 参数覆盖到 LLM 类构造（已支持方法级别）
+- [ ] 考虑修改默认 base_url 为更通用的值
