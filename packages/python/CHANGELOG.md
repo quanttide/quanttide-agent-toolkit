@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## [0.2.1] - 2026-05-20
+
+- Fix: ReActAgent uses `role="user"` for tool results (DeepSeek API compat)
+- Add `LLM.complete()` method, deprecate `chat()` (removed in v0.3.0)
+
 ## [0.2.0] - 2026-05-20
 
 **Breaking changes:**
