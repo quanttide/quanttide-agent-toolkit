@@ -1,3 +1,4 @@
+from . import config
 from .agent import Action, ActionParser, ReActAgent
 from .cost import Usage
 from .llm import LLM, LLMError

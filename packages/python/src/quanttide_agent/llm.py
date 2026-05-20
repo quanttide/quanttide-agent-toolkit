@@ -5,6 +5,7 @@ from typing import Any, Literal
 import httpx
 from pydantic import BaseModel
 
+from .config import settings
 from .cost import Usage
 from .message import ChatResponse, Message
 from .tool import ToolCall, ToolSchema
@@ -29,15 +30,17 @@ class LLM:
     """
     def __init__(
         self,
-        model: str,
-        base_url: str = "https://api.deepseek.com",
-        api_key: str = "",
+        model: str | None = None,
+        base_url: str | None = None,
+        api_key: str | None = None,
         *,
         _http_client: httpx.Client | None = None,
     ):
-        self.model = model
+        self.model = model or settings.llm_model
+        api_key = api_key or settings.llm_api_key
+        base_url = (base_url or settings.llm_base_url).rstrip("/")
         self._client = _http_client or httpx.Client(
-            base_url=base_url.rstrip("/"),
+            base_url=base_url,
             headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
             timeout=120,
         )
