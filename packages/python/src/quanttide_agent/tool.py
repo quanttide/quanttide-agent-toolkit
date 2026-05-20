@@ -20,9 +20,6 @@ class ToolSchema(BaseModel):
     parameters: dict | None = None
 
 
-ToolDef = ToolSchema
-
-
 class ToolCall(BaseModel):
     """A tool call invoked by the LLM."""
 

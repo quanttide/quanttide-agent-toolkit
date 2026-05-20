@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## [0.2.0] - 2026-05-20
+
+**Breaking changes:**
+
+- `ToolDef` removed. Use `ToolSchema` instead. (`ToolDef` was an alias, now gone.)
+
+**New features:**
+
+- `config` module with `Settings` class using `pydantic-settings`, supporting env vars, `.env`, and Vault
+- `LLM()` now accepts `None` for all params, falling back to global `settings`
+- `Usage.from_api()` with standardized field names (`input_cached_tokens` / `input_uncached_tokens` / `reasoning_tokens`)
+- `Tool` inherits `ToolSchema`, adds `executor` and `execute()` method
+
+**Module restructuring:**
+
+- `message.py` — `Message`, `ChatResponse`
+- `tool.py` — `ToolSchema`, `ToolCall`, `Tool`
+- `cost.py` — `Usage`
+- `config.py` — `Settings`
+- `llm.py` — `LLM`, `LLMError` (slimmed)
+- `agent.py` — `Action`, `ActionParser`, `ReActAgent`
+
 ## [0.1.1] - 2026-05-20
 
 - Add `Message` model with typed `role` and `to_dict()` serialization
