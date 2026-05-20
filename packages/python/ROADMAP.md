@@ -12,14 +12,7 @@
 
 ## v0.2.0 目标
 
-### ToolDef → ToolSchema 重命名
-
-`ToolDef` 本质是 schema（`name` + `description` + `parameters`），不是可执行的 Tool。`ToolSchema` 更准确。
-
-- `ToolDef` → `ToolSchema`
-- `Tool` 留给未来的可执行工具概念
-- 不改变 `ToolCall` / `Usage` / `ChatResponse` 等现有模型
-- 破坏性变更，作为 v0.2.0 统一发布
+（待补充）
 
 ## 待考察方向
 
