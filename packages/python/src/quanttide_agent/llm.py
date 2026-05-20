@@ -69,22 +69,21 @@ class LLM:
 
         body: dict[str, Any] = {"model": model or self.model, "messages": body_messages}
 
-        if temperature is not None:
-            body["temperature"] = temperature
-        if max_tokens is not None:
-            body["max_tokens"] = max_tokens
-        if top_p is not None:
-            body["top_p"] = top_p
-        if stop is not None:
-            body["stop"] = stop
-        if frequency_penalty is not None:
-            body["frequency_penalty"] = frequency_penalty
-        if presence_penalty is not None:
-            body["presence_penalty"] = presence_penalty
+        _params: dict[str, Any] = {
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "top_p": top_p,
+            "stop": stop,
+            "frequency_penalty": frequency_penalty,
+            "presence_penalty": presence_penalty,
+            "reasoning_effort": reasoning_effort,
+            "tool_choice": tool_choice,
+            "response_format": response_format,
+        }
+        body.update({k: v for k, v in _params.items() if v is not None})
+
         if thinking is not None:
             body["thinking"] = {"type": "enabled" if thinking else "disabled"}
-        if reasoning_effort is not None:
-            body["reasoning_effort"] = reasoning_effort
         if tools is not None:
             body["tools"] = [
                 {
@@ -97,10 +96,6 @@ class LLM:
                 }
                 for t in tools
             ]
-        if tool_choice is not None:
-            body["tool_choice"] = tool_choice
-        if response_format is not None:
-            body["response_format"] = response_format
 
         last_error: Exception | None = None
         for _ in range(max(retry + 1, 1)):
