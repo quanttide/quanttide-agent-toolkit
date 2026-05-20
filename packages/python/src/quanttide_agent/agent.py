@@ -53,8 +53,10 @@ class ActionParser:
         raw = m.group(2).strip()
         try:
             inp = json.loads(raw)
+            if not isinstance(inp, dict):
+                inp = {}
         except json.JSONDecodeError:
-            inp = raw
+            inp = {}
         return Action(name=name, args=inp)
 
 
