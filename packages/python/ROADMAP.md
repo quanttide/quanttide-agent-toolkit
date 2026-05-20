@@ -18,10 +18,9 @@
 
 ### Provider 特化参数
 
-`chat()` / `complete()` 的 `thinking` / `reasoning_effort` 参数是 DeepSeek 特化的。
+`thinking` / `reasoning_effort` 保留为 DeepSeek 原生命名参数。其他 Provider 有不同参数时，用调用方自行处理，库不增加 Provider 无关的抽象层。
 
-- 备选：用 `extra_body` 透传替代命名参数
-- 触发条件：需要支持 DeepSeek 以外的 Provider
+- 原则：**DeepSeek 优先**，不提前做多 Provider 兼容
 
 ## 待考察
 
