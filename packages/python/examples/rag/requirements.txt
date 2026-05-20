@@ -1,0 +1,13 @@
+sentence-transformers
+llama-index
+tiktoken
+numpy
+logging
+pathlib
+pyyaml
+dynaconf
+dashscope
+zhipuai
+openai
+random
+docx
