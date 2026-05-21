@@ -7,7 +7,7 @@ on:
 
 jobs:
   publish:
-    uses: quanttide/.github/workflows/pypi-publish.yml@v1
+    uses: quanttide/.github/.github/workflows/pypi-publish.yml@v1
     with:
       python-version: "3.12"
       working-directory: packages/python
