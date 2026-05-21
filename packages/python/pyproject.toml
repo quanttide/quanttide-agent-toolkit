@@ -1,6 +1,6 @@
 [project]
 name = "quanttide-agent"
-version = "0.2.3"
+version = "0.3.0"
 description = "量潮智能体标准Python工具箱"
 authors = [{name = "QuantTide Inc.", email = "opensource@quanttide.com"}]
 license = {text = "Apache 2.0"}
@@ -9,7 +9,6 @@ requires-python = ">=3.10"
 dependencies = [
     "httpx>=0.28",
     "pydantic>=2.0",
-    "pydantic-settings>=2.0",
 ]
 
 [build-system]

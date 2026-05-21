@@ -372,19 +372,6 @@ class TestMessageInput:
         assert b"Hi" in reqs[0].read()
 
 
-class TestChatDeprecated:
-    def test_chat_warns(self):
-        llm, reqs = _make_llm()
-        import warnings
-
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            resp = llm.chat("Hi")
-            assert len(w) == 1
-            assert issubclass(w[0].category, DeprecationWarning)
-            assert "complete()" in str(w[0].message)
-            assert resp.content == "Hello! How can I help?"
-
 
 class TestBaseUrlTrailingSlash:
     def test_trailing_slash_stripped(self):

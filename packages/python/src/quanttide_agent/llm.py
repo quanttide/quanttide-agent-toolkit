@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import warnings
 from typing import Any, Literal
 
 import httpx
@@ -137,7 +136,4 @@ class LLM:
             usage=usage,
         )
 
-    def chat(self, *args, **kwargs) -> ChatResponse:
-        """Deprecated: use complete() instead. Will be removed in v0.3.0."""
-        warnings.warn("LLM.chat() is deprecated, use LLM.complete() instead", DeprecationWarning, stacklevel=2)
-        return self.complete(*args, **kwargs)
+

@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## [0.3.0] - 2026-05-21
+
+**Breaking changes:**
+
+- `config.py` removed `settings` singleton — users must now pass values directly to `LLM()` or instantiate `Settings` explicitly
+- Removed `pydantic-settings` and Vault support from `config.py`; `Settings` is now a `dataclass`
+- `LLM.__init__` no longer falls back to global `settings`; uses inline defaults instead
+- Removed deprecated `LLM.chat()` method — use `LLM.complete()` instead
+
+**Dependencies:**
+
+- Removed `pydantic-settings` from pyproject.toml
+
 ## [0.2.1] - 2026-05-20
 ## [0.2.3] - 2026-05-21
 
@@ -14,7 +27,6 @@
 
 
 - Fix: ReActAgent uses `role="user"` for tool results (DeepSeek API compat)
-- Add `LLM.complete()` method, deprecate `chat()` (removed in v0.3.0)
 
 ## [0.2.0] - 2026-05-20
 
