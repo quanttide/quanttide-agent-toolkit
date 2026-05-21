@@ -1,7 +1,14 @@
 # CHANGELOG
 
 ## [0.2.1] - 2026-05-20
-n## [0.2.2] - 2026-05-20
+## [0.2.3] - 2026-05-21
+
+### Fixed
+
+- 修复 Vault 密钥认证失败问题
+- 修复 pydantic-settings 依赖版本冲突
+
+## [0.2.2] - 2026-05-20
 
 - Fix: ActionParser fallback to {} when LLM returns invalid JSON
 
