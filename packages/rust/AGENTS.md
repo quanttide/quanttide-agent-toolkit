@@ -2,7 +2,7 @@
 
 ## Rust 包
 
-单体包 `quanttide-agent-toolkit`，无外部 Rust 依赖。智能体相关类型自包含。
+单体包 `quanttide-agent`，无外部 Rust 依赖。智能体相关类型自包含。
 
 ### 构建
 
