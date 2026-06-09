@@ -8,4 +8,4 @@ pub use message::{Message, ChatResponse};
 pub use tool::{ToolSchema, ToolCall, Tool};
 pub use cost::Usage;
 pub use config::Settings;
-pub use llm::{LLM, LLMError};
+pub use llm::{LLM, LLMError, HttpClient, parse_response};

@@ -18,10 +18,29 @@ impl fmt::Display for LLMError {
 
 impl std::error::Error for LLMError {}
 
+pub trait HttpClient: Send + Sync {
+    fn post_json(&self, url: &str, auth: &str, body: &Value) -> Result<Value, LLMError>;
+}
+
+pub struct UreqClient;
+
+impl HttpClient for UreqClient {
+    fn post_json(&self, url: &str, auth: &str, body: &Value) -> Result<Value, LLMError> {
+        let resp = ureq::post(url)
+            .set("Authorization", auth)
+            .set("Content-Type", "application/json")
+            .send_json(body)
+            .map_err(|e| LLMError(format!("request failed: {}", e)))?;
+        resp.into_json()
+            .map_err(|e| LLMError(format!("parse failed: {}", e)))
+    }
+}
+
 pub struct LLM {
     model: String,
     base_url: String,
     api_key: String,
+    client: Box<dyn HttpClient>,
 }
 
 impl Default for LLM {
@@ -37,6 +56,16 @@ impl LLM {
             model: model.to_string(),
             base_url: base_url.trim_end_matches('/').to_string(),
             api_key: api_key.to_string(),
+            client: Box::new(UreqClient),
+        }
+    }
+
+    pub fn with_client(model: &str, base_url: &str, api_key: &str, client: Box<dyn HttpClient>) -> Self {
+        Self {
+            model: model.to_string(),
+            base_url: base_url.trim_end_matches('/').to_string(),
+            api_key: api_key.to_string(),
+            client,
         }
     }
 
@@ -47,18 +76,9 @@ impl LLM {
     ) -> Result<ChatResponse, LLMError> {
         let body = self.build_body(messages, &options);
         let url = format!("{}/chat/completions", self.base_url);
-
-        let resp = ureq::post(&url)
-            .set("Authorization", &format!("Bearer {}", self.api_key))
-            .set("Content-Type", "application/json")
-            .send_json(&body)
-            .map_err(|e| LLMError(format!("request failed: {}", e)))?;
-
-        let data: Value = resp
-            .into_json()
-            .map_err(|e| LLMError(format!("parse failed: {}", e)))?;
-
-        self.parse_response(data)
+        let auth = format!("Bearer {}", self.api_key);
+        let data = self.client.post_json(&url, &auth, &body)?;
+        parse_response(&data, &self.model)
     }
 
     fn build_body(&self, messages: &[Message], options: &CompleteOptions) -> Value {
@@ -120,33 +140,33 @@ impl LLM {
 
         Value::Object(body)
     }
+}
 
-    fn parse_response(&self, data: Value) -> Result<ChatResponse, LLMError> {
-        let choice = data["choices"][0].clone();
-        let msg = choice["message"].clone();
+pub fn parse_response(data: &Value, default_model: &str) -> Result<ChatResponse, LLMError> {
+    let choice = data["choices"][0].clone();
+    let msg = choice["message"].clone();
 
-        let tool_calls = msg["tool_calls"].as_array().map(|arr| {
-            arr.iter()
-                .map(|tc| ToolCall {
-                    id: tc["id"].as_str().unwrap_or("").to_string(),
-                    name: tc["function"]["name"].as_str().unwrap_or("").to_string(),
-                    arguments: tc["function"]["arguments"].as_str().unwrap_or("").to_string(),
-                })
-                .collect()
-        });
+    let tool_calls = msg["tool_calls"].as_array().map(|arr| {
+        arr.iter()
+            .map(|tc| ToolCall {
+                id: tc["id"].as_str().unwrap_or("").to_string(),
+                name: tc["function"]["name"].as_str().unwrap_or("").to_string(),
+                arguments: tc["function"]["arguments"].as_str().unwrap_or("").to_string(),
+            })
+            .collect()
+    });
 
-        let usage_raw = data.get("usage");
-        let usage = usage_raw.and_then(Usage::from_api);
+    let usage_raw = data.get("usage");
+    let usage = usage_raw.and_then(Usage::from_api);
 
-        Ok(ChatResponse {
-            content: msg["content"].as_str().unwrap_or("").to_string(),
-            model: data["model"].as_str().unwrap_or(&self.model).to_string(),
-            finish_reason: choice["finish_reason"].as_str().unwrap_or("stop").to_string(),
-            reasoning_content: msg["reasoning_content"].as_str().map(String::from),
-            tool_calls,
-            usage,
-        })
-    }
+    Ok(ChatResponse {
+        content: msg["content"].as_str().unwrap_or("").to_string(),
+        model: data["model"].as_str().unwrap_or(default_model).to_string(),
+        finish_reason: choice["finish_reason"].as_str().unwrap_or("stop").to_string(),
+        reasoning_content: msg["reasoning_content"].as_str().map(String::from),
+        tool_calls,
+        usage,
+    })
 }
 
 pub struct CompleteOptions {
