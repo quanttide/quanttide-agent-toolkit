@@ -1,0 +1,6 @@
+[package]
+name = "quanttide-agent-toolkit"
+version = "0.1.0"
+edition = "2021"
+description = "量潮智能体工具箱 — 数据模型与工具函数"
+license = "MIT"
