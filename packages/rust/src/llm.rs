@@ -203,6 +203,38 @@ impl Default for CompleteOptions {
     }
 }
 
+/// Parse structured output from LLM response text.
+///
+/// Handles markdown code blocks (` ```json `, ` ```yaml `),
+/// raw JSON objects `{}`, and raw JSON arrays `[]`.
+pub fn parse_structured_output(response: &str) -> Result<Value, String> {
+    for marker in &["```json", "```JSON", "```yaml", "```YAML"] {
+        if let Some(start) = response.find(marker) {
+            let s = start + marker.len();
+            let e = response[s..].find("```").map(|i| s + i).unwrap_or(response.len());
+            let trimmed = response[s..e].trim();
+            if let Ok(v) = serde_json::from_str(trimmed) {
+                return Ok(v);
+            }
+        }
+    }
+    if let Some(start) = response.find('{') {
+        let e = response.rfind('}').map(|i| i + 1).unwrap_or(response.len());
+        let trimmed = response[start..e].trim();
+        if let Ok(v) = serde_json::from_str(trimmed) {
+            return Ok(v);
+        }
+    }
+    if let Some(start) = response.find('[') {
+        let e = response.rfind(']').map(|i| i + 1).unwrap_or(response.len());
+        let trimmed = response[start..e].trim();
+        if let Ok(v) = serde_json::from_str(trimmed) {
+            return Ok(v);
+        }
+    }
+    Err("No valid JSON found in response".to_string())
+}
+
 pub enum Stop {
     Single(String),
     List(Vec<String>),
