@@ -2,5 +2,10 @@
 name = "quanttide-agent"
 version = "0.1.0"
 edition = "2021"
-description = "量潮智能体工具箱 — 数据模型与工具函数"
+description = "量潮智能体工具箱 — 数据模型与 LLM 客户端"
 license = "MIT"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+ureq = { version = "2", features = ["json"] }
