@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.0] - 2026-06-10
+
+### Added
+
+- LLM client with `ureq` HTTP transport and mock support
+- Message type: role/content/tool_call_id with `to_dict()` serialization
+- ChatResponse type: content, tool_calls, usage, model
+- CompleteOptions: model override, thinking mode
+- ToolSchema: name, description, parameters (JSON Schema)
+- ToolCall: id, function (name, arguments)
+- Tool: inherits ToolSchema, adds `Executor` trait for execution
+- Usage: token counts with `from_api()` parser
+- Settings: env var config (LLM_MODEL, LLM_BASE_URL, LLM_API_KEY)
+- `parse_structured_output()`: extract JSON from LLM response text
+
+### Changed
+
+- 首个稳定版本发布
+
 ## [0.1.0-rc.1] - 2026-06-10
 
 ### Changed
