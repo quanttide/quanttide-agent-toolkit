@@ -7,8 +7,8 @@ from unittest.mock import patch
 import httpx
 import pytest
 
-from quanttide_agent import ChatResponse, LLM, ToolCall, ToolSchema, Usage
-from quanttide_agent.llm import LLMError
+from quanttide_agent import LLM, ChatResponse, ToolCall, ToolSchema, Usage
+from quanttide_agent.llm import AsyncLLM, LLMError
 
 MOCK_CHAT_RESPONSE = {
     "id": "chatcmpl-123",
@@ -28,7 +28,11 @@ MOCK_CHAT_RESPONSE = {
 
 def _make_llm(mock_response: dict | None = None) -> tuple[LLM, list[httpx.Request]]:
     requests: list[httpx.Request] = []
-    response = copy.deepcopy(mock_response) if mock_response is not None else copy.deepcopy(MOCK_CHAT_RESPONSE)
+    response = (
+        copy.deepcopy(mock_response)
+        if mock_response is not None
+        else copy.deepcopy(MOCK_CHAT_RESPONSE)
+    )
 
     def handler(request: httpx.Request) -> httpx.Response:
         requests.append(request)
@@ -36,7 +40,9 @@ def _make_llm(mock_response: dict | None = None) -> tuple[LLM, list[httpx.Reques
 
     transport = httpx.MockTransport(handler)
     client = httpx.Client(transport=transport, base_url="http://test")
-    return LLM(model="deepseek-v4-pro", api_key="sk-test", _http_client=client), requests
+    return LLM(
+        model="deepseek-v4-pro", api_key="sk-test", _http_client=client
+    ), requests
 
 
 def _body(req: httpx.Request) -> dict:
@@ -45,13 +51,26 @@ def _body(req: httpx.Request) -> dict:
 
 class TestLLMInit:
     def test_default_base_url(self):
-        transport = httpx.MockTransport(lambda r: httpx.Response(200, json=MOCK_CHAT_RESPONSE))
-        llm = LLM(model="test", api_key="sk-test", _http_client=httpx.Client(transport=transport, base_url="http://test"))
+        transport = httpx.MockTransport(
+            lambda r: httpx.Response(200, json=MOCK_CHAT_RESPONSE)
+        )
+        llm = LLM(
+            model="test",
+            api_key="sk-test",
+            _http_client=httpx.Client(transport=transport, base_url="http://test"),
+        )
         assert llm.model == "test"
 
     def test_custom_base_url(self):
-        transport = httpx.MockTransport(lambda r: httpx.Response(200, json=MOCK_CHAT_RESPONSE))
-        llm = LLM(model="test", base_url="https://custom.example.com/v1", api_key="sk-test", _http_client=httpx.Client(transport=transport))
+        transport = httpx.MockTransport(
+            lambda r: httpx.Response(200, json=MOCK_CHAT_RESPONSE)
+        )
+        llm = LLM(
+            model="test",
+            base_url="https://custom.example.com/v1",
+            api_key="sk-test",
+            _http_client=httpx.Client(transport=transport),
+        )
         assert llm.model == "test"
 
 
@@ -138,7 +157,15 @@ class TestChatParameters:
     def test_tools(self):
         llm, reqs = _make_llm()
         tools = [
-            ToolSchema(name="get_weather", description="Get weather", parameters={"type": "object", "properties": {"location": {"type": "string"}}, "required": ["location"]}),
+            ToolSchema(
+                name="get_weather",
+                description="Get weather",
+                parameters={
+                    "type": "object",
+                    "properties": {"location": {"type": "string"}},
+                    "required": ["location"],
+                },
+            ),
         ]
         llm.complete("Weather?", tools=tools)
         assert "tools" in _body(reqs[0])
@@ -190,7 +217,10 @@ class TestToolCalls:
             {
                 "id": "call_1",
                 "type": "function",
-                "function": {"name": "get_weather", "arguments": '{"location": "Hangzhou"}'},
+                "function": {
+                    "name": "get_weather",
+                    "arguments": '{"location": "Hangzhou"}',
+                },
             }
         ]
         mock["choices"][0]["message"]["content"] = None
@@ -372,12 +402,15 @@ class TestMessageInput:
         assert b"Hi" in reqs[0].read()
 
 
-
 class TestBaseUrlTrailingSlash:
     def test_trailing_slash_stripped(self):
-        transport = httpx.MockTransport(lambda r: httpx.Response(200, json=MOCK_CHAT_RESPONSE))
+        transport = httpx.MockTransport(
+            lambda r: httpx.Response(200, json=MOCK_CHAT_RESPONSE)
+        )
         client = httpx.Client(transport=transport, base_url="http://test")
-        llm = LLM(model="test", base_url="http://test/", api_key="k", _http_client=client)
+        llm = LLM(
+            model="test", base_url="http://test/", api_key="k", _http_client=client
+        )
         assert str(llm._client.base_url) == "http://test"
 
 
@@ -386,7 +419,7 @@ class TestActionParserEdgeCases:
         from quanttide_agent.agent import ActionParser
 
         p = ActionParser()
-        result = p.parse('Action name: test\nAction args: []')
+        result = p.parse("Action name: test\nAction args: []")
         assert result is not None
         assert result.name == "test"
         assert result.args == {}
@@ -395,7 +428,7 @@ class TestActionParserEdgeCases:
         from quanttide_agent.agent import ActionParser
 
         p = ActionParser()
-        result = p.parse('Action name: test\nAction args: not-json')
+        result = p.parse("Action name: test\nAction args: not-json")
         assert result is not None
         assert result.name == "test"
         assert result.args == {}
@@ -428,3 +461,250 @@ class TestConfigVaultFallback:
             importlib.reload(mod)
             assert mod._HAS_VAULT is False
             assert mod.VaultSettingsSource is None
+
+
+class TestBaseLLMPublicMethods:
+    @staticmethod
+    def _llm() -> BaseLLM:
+        from quanttide_agent.llm import BaseLLM
+
+        return BaseLLM
+
+    def test_build_chat_body_string_input(self):
+        Base = self._llm()
+        body = Base.build_chat_body("Hello", model="test")
+        assert body["model"] == "test"
+        assert body["messages"] == [{"role": "user", "content": "Hello"}]
+
+    def test_build_chat_body_message_list(self):
+        from quanttide_agent import Message
+
+        Base = self._llm()
+        body = Base.build_chat_body(
+            [
+                Message(role="system", content="You are"),
+                Message(role="user", content="Hi"),
+            ],
+            model="test",
+        )
+        assert body["messages"] == [
+            {"role": "system", "content": "You are"},
+            {"role": "user", "content": "Hi"},
+        ]
+
+    def test_build_chat_body_dict_list(self):
+        Base = self._llm()
+        body = Base.build_chat_body(
+            [{"role": "user", "content": "Hi"}],
+            model="test",
+        )
+        assert body["messages"] == [{"role": "user", "content": "Hi"}]
+
+    def test_build_chat_body_with_tools(self):
+        Base = self._llm()
+        tools = [
+            ToolSchema(
+                name="get_weather",
+                description="Get weather",
+                parameters={
+                    "type": "object",
+                    "properties": {"location": {"type": "string"}},
+                    "required": ["location"],
+                },
+            )
+        ]
+        body = Base.build_chat_body("Hi", model="test", tools=tools)
+        assert "tools" in body
+        assert body["tools"][0]["function"]["name"] == "get_weather"
+
+    def test_build_chat_body_thinking_enabled(self):
+        Base = self._llm()
+        body = Base.build_chat_body("Hi", model="test", thinking=True)
+        assert body["thinking"] == {"type": "enabled"}
+
+    def test_build_chat_body_thinking_disabled(self):
+        Base = self._llm()
+        body = Base.build_chat_body("Hi", model="test", thinking=False)
+        assert body["thinking"] == {"type": "disabled"}
+
+    def test_build_chat_body_reasoning_effort(self):
+        Base = self._llm()
+        body = Base.build_chat_body("Hi", model="test", reasoning_effort="high")
+        assert body["reasoning_effort"] == "high"
+
+    def test_build_chat_body_optional_params(self):
+        Base = self._llm()
+        body = Base.build_chat_body(
+            "Hi", model="test", temperature=0.7, max_tokens=100, top_p=0.9
+        )
+        assert body["temperature"] == 0.7
+        assert body["max_tokens"] == 100
+        assert body["top_p"] == 0.9
+
+    def test_parse_chat_response_basic(self):
+        Base = self._llm()
+        resp = Base.parse_chat_response(MOCK_CHAT_RESPONSE, "test")
+        assert resp.content == "Hello! How can I help?"
+        assert resp.model == "deepseek-v4-pro"
+        assert resp.finish_reason == "stop"
+
+    def test_parse_chat_response_reasoning(self):
+        mock = copy.deepcopy(MOCK_CHAT_RESPONSE)
+        mock["choices"][0]["message"]["reasoning_content"] = "I think..."
+        Base = self._llm()
+        resp = Base.parse_chat_response(mock, "test")
+        assert resp.reasoning_content == "I think..."
+
+    def test_parse_chat_response_tool_calls(self):
+        mock = copy.deepcopy(MOCK_CHAT_RESPONSE)
+        mock["choices"][0]["message"]["tool_calls"] = [
+            {
+                "id": "call_1",
+                "type": "function",
+                "function": {
+                    "name": "get_weather",
+                    "arguments": '{"location": "Hangzhou"}',
+                },
+            }
+        ]
+        mock["choices"][0]["message"]["content"] = None
+        Base = self._llm()
+        resp = Base.parse_chat_response(mock, "test")
+        assert resp.tool_calls is not None
+        assert len(resp.tool_calls) == 1
+        assert resp.tool_calls[0].name == "get_weather"
+
+    def test_parse_chat_response_no_usage(self):
+        mock = copy.deepcopy(MOCK_CHAT_RESPONSE)
+        del mock["usage"]
+        Base = self._llm()
+        resp = Base.parse_chat_response(mock, "test")
+        assert resp.usage is None
+
+
+@pytest.mark.asyncio
+class TestAsyncLLMChat:
+    @staticmethod
+    def _make_async_llm(
+        mock_response: dict | None = None,
+    ) -> tuple[AsyncLLM, list[httpx.Request]]:
+        requests: list[httpx.Request] = []
+        response = (
+            copy.deepcopy(mock_response)
+            if mock_response is not None
+            else copy.deepcopy(MOCK_CHAT_RESPONSE)
+        )
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            requests.append(request)
+            return httpx.Response(200, json=response)
+
+        transport = httpx.MockTransport(handler)
+        client = httpx.AsyncClient(transport=transport, base_url="http://test")
+        return AsyncLLM(
+            model="deepseek-v4-pro", api_key="sk-test", _http_client=client
+        ), requests
+
+    async def test_returns_chat_response(self):
+        llm, _ = self._make_async_llm()
+        resp = await llm.complete("Hello")
+        assert isinstance(resp, ChatResponse)
+        assert resp.content == "Hello! How can I help?"
+
+    async def test_sends_correct_body(self):
+        llm, reqs = self._make_async_llm()
+        await llm.complete("Hello")
+        body = json.loads(reqs[0].read())
+        assert body["model"] == "deepseek-v4-pro"
+        assert body["messages"][0]["content"] == "Hello"
+
+    async def test_temperature(self):
+        llm, reqs = self._make_async_llm()
+        await llm.complete("Hi", temperature=0.7)
+        assert json.loads(reqs[0].read())["temperature"] == 0.7
+
+    async def test_model_override(self):
+        llm, reqs = self._make_async_llm()
+        await llm.complete("Hi", model="deepseek-chat")
+        assert json.loads(reqs[0].read())["model"] == "deepseek-chat"
+
+    async def test_thinking(self):
+        llm, reqs = self._make_async_llm()
+        await llm.complete("Hi", thinking=True)
+        assert json.loads(reqs[0].read())["thinking"] == {"type": "enabled"}
+
+    async def test_tool_call_in_response(self):
+        mock = copy.deepcopy(MOCK_CHAT_RESPONSE)
+        mock["choices"][0]["message"]["tool_calls"] = [
+            {
+                "id": "call_1",
+                "type": "function",
+                "function": {
+                    "name": "get_weather",
+                    "arguments": '{"location": "Hangzhou"}',
+                },
+            }
+        ]
+        mock["choices"][0]["message"]["content"] = None
+        llm, _ = self._make_async_llm(mock)
+        resp = await llm.complete("Weather?")
+        assert resp.tool_calls is not None
+        assert resp.tool_calls[0].name == "get_weather"
+
+    async def test_retry_then_success(self):
+        requests: list[httpx.Request] = []
+        attempts = 0
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            nonlocal attempts
+            requests.append(request)
+            attempts += 1
+            if attempts < 3:
+                return httpx.Response(500)
+            return httpx.Response(200, json=copy.deepcopy(MOCK_CHAT_RESPONSE))
+
+        transport = httpx.MockTransport(handler)
+        client = httpx.AsyncClient(transport=transport, base_url="http://test")
+        llm = AsyncLLM(model="deepseek-v4-pro", api_key="sk-test", _http_client=client)
+        resp = await llm.complete("Hi", retry=3)
+        assert resp.content == "Hello! How can I help?"
+        assert len(requests) == 3
+
+    async def test_retry_all_fail(self):
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(500)
+
+        transport = httpx.MockTransport(handler)
+        client = httpx.AsyncClient(transport=transport, base_url="http://test")
+        llm = AsyncLLM(model="deepseek-v4-pro", api_key="sk-test", _http_client=client)
+        with pytest.raises(LLMError, match="chat failed after retries"):
+            await llm.complete("Hi", retry=2)
+
+    async def test_endpoint_path(self):
+        requests: list[httpx.Request] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            requests.append(request)
+            return httpx.Response(200, json=MOCK_CHAT_RESPONSE)
+
+        transport = httpx.MockTransport(handler)
+        client = httpx.AsyncClient(transport=transport, base_url="http://test")
+        llm = AsyncLLM(model="m", api_key="k", _http_client=client)
+        await llm.complete("Hi")
+        assert requests[0].url.path == "/chat/completions"
+
+    async def test_usage(self):
+        llm, _ = self._make_async_llm()
+        resp = await llm.complete("Hi")
+        assert resp.usage is not None
+        assert resp.usage.input_tokens == 10
+        assert resp.usage.output_tokens == 5
+
+    async def test_context_manager(self):
+        transport = httpx.MockTransport(
+            lambda r: httpx.Response(200, json=MOCK_CHAT_RESPONSE)
+        )
+        client = httpx.AsyncClient(transport=transport, base_url="http://test")
+        llm = AsyncLLM(model="m", api_key="k", _http_client=client)
+        await llm.complete("Hi")
+        await client.aclose()  # external client lifecycle
