@@ -318,6 +318,42 @@ fn settings_from_env_uses_env() {
     }
 }
 
+#[test]
+fn settings_falls_back_to_deepseek_api_key() {
+    let orig_key = std::env::var("LLM_API_KEY").ok();
+    let orig_deepseek = std::env::var("DEEPSEEK_API_KEY").ok();
+    std::env::remove_var("LLM_API_KEY");
+    std::env::set_var("DEEPSEEK_API_KEY", "deepseek-fallback-key");
+    let s = Settings::from_env();
+    assert_eq!(s.llm_api_key, "deepseek-fallback-key");
+    match orig_key {
+        Some(k) => std::env::set_var("LLM_API_KEY", k),
+        None => std::env::remove_var("LLM_API_KEY"),
+    }
+    match orig_deepseek {
+        Some(k) => std::env::set_var("DEEPSEEK_API_KEY", k),
+        None => std::env::remove_var("DEEPSEEK_API_KEY"),
+    }
+}
+
+#[test]
+fn settings_llm_api_key_priority_over_deepseek() {
+    let orig_key = std::env::var("LLM_API_KEY").ok();
+    let orig_deepseek = std::env::var("DEEPSEEK_API_KEY").ok();
+    std::env::set_var("LLM_API_KEY", "llm-priority");
+    std::env::set_var("DEEPSEEK_API_KEY", "deepseek-secondary");
+    let s = Settings::from_env();
+    assert_eq!(s.llm_api_key, "llm-priority");
+    match orig_key {
+        Some(k) => std::env::set_var("LLM_API_KEY", k),
+        None => std::env::remove_var("LLM_API_KEY"),
+    }
+    match orig_deepseek {
+        Some(k) => std::env::set_var("DEEPSEEK_API_KEY", k),
+        None => std::env::remove_var("DEEPSEEK_API_KEY"),
+    }
+}
+
 // ── llm: mock client error ──
 
 struct MockClientError;

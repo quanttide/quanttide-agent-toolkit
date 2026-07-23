@@ -35,9 +35,21 @@ println!("{}", resp.content);
 
 ## 环境变量
 
-- `LLM_MODEL`: 模型名（默认 `deepseek-v4-flash`）
-- `LLM_BASE_URL`: API 地址（默认 `https://api.deepseek.com`）
-- `LLM_API_KEY`: API 密钥
+| 变量 | 说明 | 默认值 |
+
+|------|------|--------|
+
+| `LLM_MODEL` | 模型名 | `deepseek-v4-flash` |
+
+| `LLM_BASE_URL` | API 地址 | `https://api.deepseek.com` |
+
+| `LLM_API_KEY` | API 密钥（优先） | — |
+
+| `DEEPSEEK_API_KEY` | API 密钥（`LLM_API_KEY` 未设置时使用） | — |
+
+
+
+优先级：`LLM_API_KEY` > `DEEPSEEK_API_KEY` > 空字符串。社区习惯用 `DEEPSEEK_API_KEY`，量潮项目建议两个都设（`LLM_API_KEY` 设为 `$DEEPSEEK_API_KEY` 的别名）。
 
 ## 许可
 
