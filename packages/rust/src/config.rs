@@ -11,7 +11,9 @@ impl Default for Settings {
         Self {
             llm_model: env::var("LLM_MODEL").unwrap_or_else(|_| "deepseek-v4-flash".to_string()),
             llm_base_url: env::var("LLM_BASE_URL").unwrap_or_else(|_| "https://api.deepseek.com".to_string()),
-            llm_api_key: env::var("LLM_API_KEY").unwrap_or_default(),
+            llm_api_key: env::var("LLM_API_KEY")
+                .or_else(|_| env::var("DEEPSEEK_API_KEY"))
+                .unwrap_or_default(),
         }
     }
 }
