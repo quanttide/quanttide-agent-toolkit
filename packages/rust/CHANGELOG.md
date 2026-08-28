@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.2] - 2026-08-28
+
+### Added
+
+- MiMo and GLM provider configuration defaults for the OpenAI-compatible client
+- GLM API key aliases: `ZHIPUAI_API_KEY` and `ZAI_API_KEY`
+
 ## [0.1.0] - 2026-06-10
 
 ### Added

@@ -10,6 +10,13 @@ use quanttide_agent::{
     tool::{Executor, Tool, ToolCall, ToolSchema},
 };
 
+fn restore_env(name: &str, value: Option<String>) {
+    match value {
+        Some(value) => std::env::set_var(name, value),
+        None => std::env::remove_var(name),
+    }
+}
+
 // ── message ──
 
 #[test]
@@ -298,10 +305,18 @@ fn llm_build_body_includes_thinking() {
 
 #[test]
 fn settings_default_values() {
+    let original_key = std::env::var("LLM_API_KEY").ok();
+    let original_deepseek = std::env::var("DEEPSEEK_API_KEY").ok();
+    std::env::remove_var("LLM_API_KEY");
+    std::env::remove_var("DEEPSEEK_API_KEY");
+
     let s = Settings::default();
     assert_eq!(s.llm_model, "deepseek-v4-flash");
     assert_eq!(s.llm_base_url, "https://api.deepseek.com");
     assert_eq!(s.llm_api_key, "");
+
+    restore_env("LLM_API_KEY", original_key);
+    restore_env("DEEPSEEK_API_KEY", original_deepseek);
 }
 
 #[test]

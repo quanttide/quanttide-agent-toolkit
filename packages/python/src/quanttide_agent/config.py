@@ -20,6 +20,7 @@ Usage::
 
 from __future__ import annotations
 
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource
 
 try:
@@ -42,7 +43,25 @@ class Settings(BaseSettings):
 
     llm_model: str = "deepseek-v4-flash"
     llm_base_url: str = "https://api.deepseek.com"
-    llm_api_key: str = ""
+    llm_api_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("LLM_API_KEY", "DEEPSEEK_API_KEY"),
+    )
+
+    mimo_model: str = "mimo-v2.5"
+    mimo_base_url: str = "https://api.xiaomimimo.com/v1"
+    mimo_api_key: str = ""
+
+    glm_model: str = "glm-5.3"
+    glm_base_url: str = "https://open.bigmodel.cn/api/paas/v4"
+    glm_api_key: str = Field(
+        default="",
+        validation_alias=AliasChoices(
+            "GLM_API_KEY",
+            "ZHIPUAI_API_KEY",
+            "ZAI_API_KEY",
+        ),
+    )
 
     model_config = {}
 

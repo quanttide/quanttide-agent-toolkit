@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## [0.4.1] - 2026-08-28
+
+### Added
+
+- MiMo and GLM provider configuration defaults for the OpenAI-compatible client
+- GLM API key aliases: `ZHIPUAI_API_KEY` and `ZAI_API_KEY`
+
+### Fixed
+
+- Declare `pydantic-settings` as a runtime dependency
+
 ## [0.4.0] - 2026-06-23
 
 ### Added

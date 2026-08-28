@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [0.4.1] - 2026-08-28
+
+### Added
+
+- MiMo and GLM configuration support in the Python and Rust packages
+
+### Fixed
+
+- Declare the Python package's `pydantic-settings` runtime dependency
+
 ## [0.4.0] - 2026-06-23
 
 ### Added

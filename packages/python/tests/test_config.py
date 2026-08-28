@@ -33,3 +33,12 @@ def test_glm_settings_accept_zhipu_api_key_alias(monkeypatch):
     settings = Settings(_env_file=None)
 
     assert settings.glm_api_key == "zhipu-key"
+
+
+def test_llm_settings_accept_deepseek_api_key_alias(monkeypatch):
+    monkeypatch.delenv("LLM_API_KEY", raising=False)
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "deepseek-key")
+
+    settings = Settings(_env_file=None)
+
+    assert settings.llm_api_key == "deepseek-key"
