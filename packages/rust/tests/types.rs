@@ -354,6 +354,47 @@ fn settings_llm_api_key_priority_over_deepseek() {
     }
 }
 
+#[test]
+fn settings_provider_defaults() {
+    let s = Settings::default();
+    assert_eq!(s.mimo_model, "mimo-v2.5");
+    assert_eq!(s.mimo_base_url, "https://api.xiaomimimo.com/v1");
+    assert_eq!(s.glm_model, "glm-5.3");
+    assert_eq!(s.glm_base_url, "https://open.bigmodel.cn/api/paas/v4");
+}
+
+#[test]
+fn settings_provider_env_overrides() {
+    let original_mimo_model = std::env::var("MIMO_MODEL").ok();
+    let original_mimo_base_url = std::env::var("MIMO_BASE_URL").ok();
+    let original_mimo_api_key = std::env::var("MIMO_API_KEY").ok();
+    let original_glm_model = std::env::var("GLM_MODEL").ok();
+    let original_glm_base_url = std::env::var("GLM_BASE_URL").ok();
+    let original_glm_api_key = std::env::var("GLM_API_KEY").ok();
+
+    std::env::set_var("MIMO_MODEL", "mimo-test");
+    std::env::set_var("MIMO_BASE_URL", "https://mimo.example/v1");
+    std::env::set_var("MIMO_API_KEY", "mimo-key");
+    std::env::set_var("GLM_MODEL", "glm-test");
+    std::env::set_var("GLM_BASE_URL", "https://glm.example/v4");
+    std::env::set_var("GLM_API_KEY", "glm-key");
+
+    let s = Settings::from_env();
+    assert_eq!(s.mimo_model, "mimo-test");
+    assert_eq!(s.mimo_base_url, "https://mimo.example/v1");
+    assert_eq!(s.mimo_api_key, "mimo-key");
+    assert_eq!(s.glm_model, "glm-test");
+    assert_eq!(s.glm_base_url, "https://glm.example/v4");
+    assert_eq!(s.glm_api_key, "glm-key");
+
+    restore_env("MIMO_MODEL", original_mimo_model);
+    restore_env("MIMO_BASE_URL", original_mimo_base_url);
+    restore_env("MIMO_API_KEY", original_mimo_api_key);
+    restore_env("GLM_MODEL", original_glm_model);
+    restore_env("GLM_BASE_URL", original_glm_base_url);
+    restore_env("GLM_API_KEY", original_glm_api_key);
+}
+
 // ── llm: mock client error ──
 
 struct MockClientError;
